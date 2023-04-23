@@ -10,7 +10,10 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven { url 'https://jitpack.io' }
     }
 }
 rootProject.name = "buildable"
 include ':app'
+include ':buildable-annotations'
+include ':buildable-processors'
