@@ -4,6 +4,11 @@ plugins {
     id 'com.google.devtools.ksp' version '1.8.10-1.0.9'
 }
 
+sourceSets.configureEach {
+    kotlin.srcDir("$buildDir/generated/ksp/$name/kotlin/")
+}
+
+
 android {
     namespace 'io.behzod.buildable'
     compileSdk 33
@@ -27,6 +32,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -49,6 +55,8 @@ android {
 
 dependencies {
     implementation(project(":buildable-annotations"))
+    implementation(project(":buildable-annotations:mapper"))
+
     implementation 'androidx.core:core-ktx:1.9.0'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.3.1'
     implementation 'androidx.activity:activity-compose:1.3.1'
@@ -62,4 +70,5 @@ dependencies {
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_ui_version"
     debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_ui_version"
     ksp project(":buildable-processors")
+    ksp project(":buildable-processors:mapper")
 }
