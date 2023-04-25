@@ -8,3 +8,6 @@ class Student: Person {
        println("Student sleeps 5 hours")
     }
 }
+
+fun main() {
+}

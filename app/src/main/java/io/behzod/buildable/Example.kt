@@ -1,7 +1,25 @@
 package io.behzod.buildable
 
-fun main() {
-    val student = PersonFactory(PersonType.STUDENT)
+import io.spherelabs.buildableannotations.BuildableComponent
+import io.spherelabs.buildableannotations.BuildableFactory
 
-    println(student.sleep())
+
+
+@BuildableFactory
+interface Car {
+    fun drive()
+}
+
+@BuildableComponent
+class Nexia: Car {
+    override fun drive() {
+        println("Nexia is driving...")
+    }
+}
+
+@BuildableComponent
+class Matiz: Car {
+    override fun drive() {
+        println("Matiz is driving...")
+    }
 }
