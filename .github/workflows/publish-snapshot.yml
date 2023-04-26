@@ -2,11 +2,13 @@ name: Publish Snapshot builds
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   publish:
-  
+
     name: Snapshot build and publish
     runs-on: ubuntu-22.04
     steps:
@@ -17,6 +19,7 @@ jobs:
         with:
           distribution: adopt
           java-version: 11
+
       - name: Release build
         # assembleRelease for all modules, excluding non-library modules: samples, docs
         run: ./gradlew assembleRelease -x :app:assembleRelease
