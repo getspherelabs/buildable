@@ -22,7 +22,6 @@ jobs:
       - uses: ./.github/workflows/gradle-caches
         with:
           key-prefix: gradle-lint
-
       - name: Ktlint
         run: ./gradlew ktlintCheck --scan
   build:
