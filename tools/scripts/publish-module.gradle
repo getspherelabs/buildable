@@ -41,7 +41,7 @@ afterEvaluate {
           url = 'https://github.com/getspherelabs/buildable'
           licenses {
             license {
-              name = 'Osmon License'
+              name = 'Buildable License'
             }
           }
           developers {
