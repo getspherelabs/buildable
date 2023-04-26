@@ -7,6 +7,24 @@ on:
     branches: [ "main" ]
 
 jobs:
+  lint:
+
+    name: ktlint
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3.1.0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3.6.0
+        with:
+          distribution: adopt
+          java-version: 11
+      - uses: ./.github/workflows/gradle-caches
+        with:
+          key-prefix: gradle-lint
+
+      - name: Ktlint
+        run: ./gradlew ktlintCheck --scan
   build:
 
     runs-on: ubuntu-latest
