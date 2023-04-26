@@ -1,0 +1,12 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
+}
+
+
+ext {
+  set("PUBLISH_GROUP_ID", "io.github.behzodhalil")
+  set("PUBLISH_ARTIFACT_ID", "buildable-factory")
+  set("PUBLISH_VERSION", "1.0.0")
+}
+
+apply from: "${rootDir}/tools/scripts/publish-module.gradle"

@@ -1,12 +1,18 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm'
+  id 'org.jetbrains.kotlin.jvm'
 }
 
+ext {
+  set("PUBLISH_GROUP_ID", "io.github.behzodhalil")
+  set("PUBLISH_ARTIFACT_ID", "buildable-mapper")
+  set("PUBLISH_VERSION", "1.0.0")
+}
+
+apply from: "${rootDir}/tools/scripts/publish-module.gradle"
 
 dependencies {
-    implementation(project(":buildable-annotations:mapper"))
-
-    implementation 'com.squareup:kotlinpoet:1.12.0'
-    implementation 'com.squareup:kotlinpoet-ksp:1.12.0'
-    implementation 'com.google.devtools.ksp:symbol-processing-api:1.8.10-1.0.9'
+ implementation(project(':buildable-annotations:mapper-core'))
+  implementation 'com.squareup:kotlinpoet:1.12.0'
+  implementation 'com.squareup:kotlinpoet-ksp:1.12.0'
+  implementation 'com.google.devtools.ksp:symbol-processing-api:1.8.10-1.0.9'
 }
