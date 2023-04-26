@@ -11,6 +11,8 @@ on:
 
 concurrency:
   group: ${{ github.ref }}
+  cancel-in-progress: true
+
 
 jobs:
   lint:
@@ -69,3 +71,5 @@ jobs:
         with:
           name: testDebugUnitTest
           path: ./**/build/reports/tests/testDebugUnitTest
+
+
