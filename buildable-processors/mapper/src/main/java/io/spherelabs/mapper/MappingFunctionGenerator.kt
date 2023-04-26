@@ -110,7 +110,7 @@ class MappingFunctionGenerator(
           )
 
           extensionFunctions += targetClassTypeParameter.name.asString()
-         
+
           targetClassTypeParameter.bounds.firstOrNull()
             ?.let { upperBound: KSTypeReference ->
               packageImports.addImport(upperBound.resolve())
