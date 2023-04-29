@@ -13,6 +13,7 @@ import com.google.devtools.ksp.symbol.KSTypeReference
 import com.google.devtools.ksp.symbol.KSValueArgument
 import com.google.devtools.ksp.symbol.KSValueParameter
 import com.google.devtools.ksp.symbol.Variance
+import io.spherelabs.mapper.importer.PackageImporter
 
 private const val DIAMOND_OPERATOR_OPEN = "<"
 private const val DIAMOND_OPERATOR_CLOSE = ">"
@@ -25,44 +26,30 @@ class MappingFunctionGenerator(
   private val logger: KSPLogger
 ) {
 
-  /**
-   *
-   * Generates a function in the form of: `fun SourceClass.toTargetClass(): TargetClass`
-   *
-   * @param targetClass The class we want to map to.
-   *        It defines the schema which the `sourceClass` properties should be mapped to.
-   *        Therefore, it is also the return type of the mapper extension function.
-   *
-   * @param sourceClass The class which is the source for properties we want to map to the constructor of the
-   *        target class. It is therefore at the same time the class for which we generate the extension function.
-   */
   fun generateMappingFunction(
     sourceClass: KSClassDeclaration,
     targetClass: KSClassDeclaration,
-    packageImports: PackageImports
+    packageImporter: PackageImporter
   ): String {
     val targetClassName: String = targetClass.simpleName.getShortName()
     val packageName: String = targetClass.packageName.asString()
     val targetClassTypeParameters: List<KSTypeParameter> = targetClass.typeParameters
 
-    packageImports.targetClassTypeParameters += targetClassTypeParameters
+    packageImporter.targetClassTypeParameters += targetClassTypeParameters
 
-    // Add import for the target class
-    packageImports.addImport(packageName, targetClassName)
+    packageImporter.add(packageName, targetClassName)
 
-    // Add import for source class
-    packageImports.addImport(
+    packageImporter.add(
       sourceClass.packageName.asString(),
       sourceClass.simpleName.asString()
     )
 
-    // Create mapping extension function for source class to target class
     return generateExtensionMapperFunctionForSourceClass(
       sourceClass = sourceClass,
       targetClass = targetClass,
       targetClassTypeParameters = targetClassTypeParameters,
       targetClassName = targetClassName,
-      packageImports = packageImports
+      packageImporter = packageImporter
     )
   }
 
@@ -71,7 +58,7 @@ class MappingFunctionGenerator(
     targetClass: KSClassDeclaration,
     targetClassTypeParameters: List<KSTypeParameter>,
     targetClassName: String,
-    packageImports: PackageImports
+    packageImporter: PackageImporter
   ): String {
     var extensionFunctions = ""
     val sourceClassName: String = sourceClass.toString()
@@ -84,7 +71,7 @@ class MappingFunctionGenerator(
       targetClass = targetClass,
       sourceClass = sourceClass,
       targetClassTypeParameters = targetClassTypeParameters,
-      packageImports = packageImports,
+      packageImporter = packageImporter,
       sourceClassName = sourceClassName,
       targetClassName = targetClassName
     )
@@ -113,7 +100,7 @@ class MappingFunctionGenerator(
 
           targetClassTypeParameter.bounds.firstOrNull()
             ?.let { upperBound: KSTypeReference ->
-              packageImports.addImport(upperBound.resolve())
+              packageImporter.add(upperBound.resolve())
               extensionFunctions += ": $upperBound"
             }
 
@@ -123,7 +110,7 @@ class MappingFunctionGenerator(
           generateExtensionFunctionName(
             sourceClass,
             targetClass,
-            packageImports
+            packageImporter
           )
         }(\n"
       } else {
@@ -131,7 +118,7 @@ class MappingFunctionGenerator(
           generateExtensionFunctionName(
             sourceClass,
             targetClass,
-            packageImports
+            packageImporter
           )
         }(\n"
       }
@@ -140,16 +127,14 @@ class MappingFunctionGenerator(
         extensionFunctions += convertMissingConstructorArgumentToDeclarationText(
           isLastIndex = missingConstructorArguments.lastIndex == missingArgumentIndex,
           missingArgument = missingArgument,
-          packageImports = packageImports,
+          packageImporter = packageImporter,
           targetClass = targetClass
         )
       }
 
       extensionFunctions += "$CLOSE_FUNCTION = $targetClassName(\n"
     }
-    // No missing arguments, we can create the default empty param function head
     else {
-      // Add type parameters from target class to function head
       if (targetClassTypeParameters.isNotEmpty()) {
         extensionFunctions += "$KOTLIN_FUNCTION_KEYWORD $DIAMOND_OPERATOR_OPEN"
         targetClassTypeParameters.forEachIndexed { index: Int, targetClassTypeParameter: KSTypeParameter ->
@@ -163,7 +148,7 @@ class MappingFunctionGenerator(
           generateExtensionFunctionName(
             sourceClass = sourceClass,
             targetClass = targetClass,
-            packageImports = packageImports
+            packageImporter = packageImporter
           )
         }$OPEN_FUNCTION$CLOSE_FUNCTION = $targetClassName$OPEN_FUNCTION\n"
       } else {
@@ -171,7 +156,7 @@ class MappingFunctionGenerator(
           generateExtensionFunctionName(
             sourceClass = sourceClass,
             targetClass = targetClass,
-            packageImports = packageImports
+            packageImporter = packageImporter
           )
         }$OPEN_FUNCTION$CLOSE_FUNCTION = $targetClassName$OPEN_FUNCTION\n"
       }
@@ -208,14 +193,14 @@ class MappingFunctionGenerator(
   private fun convertMissingConstructorArgumentToDeclarationText(
     isLastIndex: Boolean,
     missingArgument: KSValueParameter,
-    packageImports: PackageImports,
+    packageImporter: PackageImporter,
     targetClass: KSClassDeclaration
   ): String {
     var missingArgumentDeclarationText = ""
     val typeArguments: MutableList<TypeArgument> = mutableListOf()
     val missingArgumentType: KSType = missingArgument.type.resolve()
 
-    packageImports.addImport(missingArgumentType)
+    packageImporter.add(missingArgumentType)
 
     // Find all required types for the argument class
     missingArgumentType.arguments.forEach { ksTypeArgument: KSTypeArgument ->
@@ -253,7 +238,7 @@ class MappingFunctionGenerator(
               typeParametersDequeue = ArrayDeque(argumentClass.arguments)
             )
             missingArgumentDeclarationText += argumentClass.markedNullableAsString() + typeSeparator
-            packageImports.addImport(argumentClass)
+            packageImporter.add(argumentClass)
           }
 
           TypeArgument.Wildcard -> missingArgumentDeclarationText += "*$typeSeparator"
@@ -274,7 +259,7 @@ class MappingFunctionGenerator(
     targetClass: KSClassDeclaration,
     sourceClass: KSClassDeclaration,
     targetClassTypeParameters: List<KSTypeParameter>,
-    packageImports: PackageImports,
+    packageImporter: PackageImporter,
     sourceClassName: String,
     targetClassName: String
   ): Pair<MutableList<KSValueParameter>, MutableList<MatchingArgument>> {
@@ -332,7 +317,7 @@ class MappingFunctionGenerator(
                 sourceFieldName = parameterNameFromSourceClass,
                 commonTargetFieldName = run {
                   if (targetClassTypeParamUpperBoundDeclaration.containingFile != null) {
-                    packageImports.addImport(
+                    packageImporter.add(
                       targetClassTypeParamUpperBoundDeclaration.packageName.asString(),
                       targetClassTypeParamUpperBoundDeclaration.getName()
                     )
@@ -475,7 +460,7 @@ class MappingFunctionGenerator(
   private fun generateExtensionFunctionName(
     sourceClass: KSDeclaration,
     targetClass: KSDeclaration,
-    packageImports: PackageImports
+    packageImporter: PackageImporter
   ): String {
     val sourceClassName: String = sourceClass.getName()
     val targetClassName: String = targetClass.getName()
@@ -486,7 +471,7 @@ class MappingFunctionGenerator(
 
           val upperBound = ksTypeParameter.bounds.firstOrNull()?.resolve()
             ?.let UpperBoundLet@{ upperBoundType ->
-              packageImports.addImport(upperBoundType)
+              packageImporter.add(upperBoundType)
               return@UpperBoundLet upperBoundType.getName()
             } ?: ""
 

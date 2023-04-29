@@ -9,6 +9,7 @@ spotless {
     trimTrailingWhitespace()
     endWithNewline()
   }
+
   java {
     importOrder()
     removeUnusedImports()
