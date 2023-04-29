@@ -10,6 +10,7 @@ import com.google.devtools.ksp.symbol.KSFile
 import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.KSValueArgument
 import com.google.devtools.ksp.symbol.KSVisitorVoid
+import io.spherelabs.mapper.importer.PackageImporter
 import java.io.OutputStream
 
 private fun OutputStream.appendText(str: String) {
@@ -49,14 +50,14 @@ class BuildableMapperFinder(
     )
 
     var extensionFunctions = ""
-    val packageImports = PackageImports()
+    val packageImporter = PackageImporter()
 
     if (mapFromClasses.isNotEmpty()) {
       mapFromClasses.forEach { sourceClass: KSClassDeclaration ->
         extensionFunctions += mappingFunctionGenerator.generateMappingFunction(
           targetClass = annotatedClass,
           sourceClass = sourceClass,
-          packageImports = packageImports
+          packageImporter = packageImporter
         )
       }
     }
@@ -66,7 +67,7 @@ class BuildableMapperFinder(
         extensionFunctions += mappingFunctionGenerator.generateMappingFunction(
           targetClass = targetClass,
           sourceClass = annotatedClass,
-          packageImports = packageImports
+          packageImporter = packageImporter
         )
       }
     }
@@ -74,7 +75,7 @@ class BuildableMapperFinder(
     generateMapperFunctions(
       containingFile = classDeclaration.containingFile!!,
       targetClassName = annotatedClass.simpleName.getShortName(),
-      packageImports = packageImports,
+      packageImporter = packageImporter,
       extensionFunctions = extensionFunctions
     )
   }
@@ -86,7 +87,7 @@ class BuildableMapperFinder(
   private fun generateMapperFunctions(
     containingFile: KSFile,
     targetClassName: String,
-    packageImports: PackageImports,
+    packageImporter: PackageImporter,
     extensionFunctions: String
   ) {
     codeGenerator.createNewFile(
@@ -95,13 +96,13 @@ class BuildableMapperFinder(
       fileName = "${targetClassName}$GENERATED_CLASS_SUFFIX"
     ).use { generatedFileOutputStream: OutputStream ->
 
-      if (packageImports.targetClassTypeParameters.isNotEmpty()) {
+      if (packageImporter.targetClassTypeParameters.isNotEmpty()) {
         generatedFileOutputStream.appendText(
           SUPPRESS_UNCHECKED_CAST_STATEMENT
         )
       }
       generatedFileOutputStream.appendText("${BuildableMapperConstants.PACKAGE_KEYWORD} $GENERATED_FILE_PATH\n\n")
-      generatedFileOutputStream.appendText(packageImports.asFormattedImports())
+      generatedFileOutputStream.appendText(packageImporter.format())
       generatedFileOutputStream.appendText(extensionFunctions)
     }
   }
