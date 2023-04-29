@@ -22,3 +22,7 @@ class Matiz : Car {
     println("Matiz is driving...")
   }
 }
+
+fun main() {
+  val nexia = CarFactory(CarType.NEXIA)
+}
