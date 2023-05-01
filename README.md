@@ -71,6 +71,11 @@ Add the dependency below into your **module**'s `build.gradle` file:
 
 ```gradle
 dependencies {
+    // For using @BuildableFactory
+    implementation("io.github.behzodhalil:buildable-factory-core:1.1.0")
+    ksp("io.github.behzodhalil:buildable-factory:1.1.0)
+    
+    // For using @BuildableMapper
     implementation("io.github.behzodhalil:buildable-mapper-core:1.1.0")
     ksp("io.github.behzodhalil:buildable-mapper:1.1.0)
 }
