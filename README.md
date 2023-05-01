@@ -143,6 +143,8 @@ kotlin {
 
 ## Usage and Examples
 
+> **Note**: In order to use the generated code, you need to execute the `./gradlew kspDebugKotlin` command or perform a project rebuild. 
+
 ### BuildableFactory
 
 `@BuildableFactory` annotation aims to simplify code generation associated with the Factory Method pattern. This simplifies the management of object creation, ultimately enhancing maintainability and code readability.
