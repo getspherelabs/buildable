@@ -18,6 +18,8 @@ class BuildableMapperProcessor(
   override fun process(resolver: Resolver): List<KSAnnotated> {
     val resolvedSymbols: Sequence<KSAnnotated> = getAnnotatedSymbols(resolver)
 
+    if(!resolvedSymbols.iterator().hasNext()) return emptyList()
+
     resolvedSymbols
       .forEach { ksAnnotated: KSAnnotated ->
         handleClassDeclaration(ksAnnotated, resolver)
