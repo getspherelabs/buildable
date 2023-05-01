@@ -33,6 +33,8 @@ Generates mapping functions that facilitate the conversion of data between diffe
 <a href="https://github.com/behzod1996/izoh"><img  alt="Buildable Cover" src="https://github.com/getspherelabs/buildable/blob/main/docs/images/BuildableMapper%20-%20Code%20Usage%202.png?raw=true" width="760" /></a> <br>
 </p>
 
+### State (Working in Progress)
+
 ## Configuring Gradle
 
 In order to use [KSP (Kotlin Symbol Processing)](https://kotlinlang.org/docs/ksp-quickstart.html) and the [Buildable](https://github.com/getspherelabs/buildable) library into your project, follow the steps below.
@@ -65,5 +67,143 @@ plugins {
 
 ## Add the Buildable library to your module
 
+Add the dependency below into your **module**'s `build.gradle` file:
 
+```gradle
+dependencies {
+    implementation("io.github.behzodhalil:buildable-mapper-core:1.1.0")
+    ksp("io.github.behzodhalil:buildable-mapper:1.1.0)
+}
+```
+### Add source path (KSP)
 
+To access generated codes from KSP, you need to set up the source path like the below into your **module**'s `build.gradle` file:
+
+<details open>
+  <summary>Android Kotlin (KTS)</summary>
+
+```kotlin
+kotlin {
+  sourceSets.configureEach {
+    kotlin.srcDir("$buildDir/generated/ksp/$name/kotlin/")
+  }
+}
+```
+</details>
+
+<details>
+  <summary>Android Groovy</summary>
+
+```gradle
+android {
+    applicationVariants.all { variant ->
+        kotlin.sourceSets {
+            def name = variant.name
+            getByName(name) {
+                kotlin.srcDir("build/generated/ksp/$name/kotlin")
+            }
+        }
+    }
+}
+```
+</details>
+
+<details>
+  <summary>Pure Kotlin (KTS)</summary>
+
+```gradle
+kotlin {
+    sourceSets.main {
+        kotlin.srcDir("build/generated/ksp/main/kotlin")
+    }
+    sourceSets.test {
+        kotlin.srcDir("build/generated/ksp/test/kotlin")
+    }
+}
+```
+</details>
+
+<details>
+  <summary>Pure Kotlin Groovy</summary>
+
+```gradle
+kotlin {
+    sourceSets {
+        main.kotlin.srcDirs += 'build/generated/ksp/main/kotlin'
+        test.kotlin.srcDirs += 'build/generated/ksp/test/kotlin'
+    }
+}
+```
+</details>
+
+## Usage and Examples
+
+### BuildableFactory
+
+`@BuildableFactory` annotation aims to simplify code generation associated with the Factory Method pattern. This simplifies the management of object creation, ultimately enhancing maintainability and code readability.
+- `@BuildableComponent` annotation is utilized to specify the type for creating a factory pattern implementation.
+
+```kotlin
+@BuildableFactory
+interface Car {
+  fun drive()
+}
+
+@BuildableComponent
+class Nexia : Car {
+  override fun drive() {
+    println("Nexia is driving...")
+  }
+}
+
+@BuildableComponent
+class Matiz : Car {
+  override fun drive() {
+    println("Matiz is driving...")
+  }
+```
+
+The example codes generate `CarFactory` and `CarTypes` for easier object management.
+
+**CarFactory (generated)**:
+```kotlin
+public enum class CarType {
+  NEXIA,
+  MATIZ,
+}
+
+public fun CarFactory(key: CarType): Car = when (key) {
+  CarType.NEXIA -> Nexia()
+  CarType.MATIZ -> Matiz()
+}
+```
+
+### BuildableMapper
+
+ `@BuildableMapper` annotation is designed to streamline code generation for mapping one class to another, making object creation management more efficient and improving overall maintainability and readability within the codebase.
+
+```kotlin
+@BuildableMapper(
+  from = [NotificationEntity::class],
+  to = [NotificationEntity::class]
+)
+data class NotificationDto(
+  val name: String
+)
+
+data class NotificationEntity(
+  val name: String
+)
+```
+
+The example codes generate `NotificationDtoBuildableMapperExtensions.kt` for easier object management.
+
+```kotlin
+fun NotificationEntity.toNotificationDto() = NotificationDto(
+	name = this.name,
+)
+
+fun NotificationDto.toNotificationEntity() = NotificationEntity(
+	name = this.name,
+)
+```
