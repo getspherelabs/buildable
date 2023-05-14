@@ -191,7 +191,7 @@ public fun CarFactory(key: CarType): Car = when (key) {
 
 ```kotlin
 @BuildableMapper(
-  from = [NotificationEntity::class],
+  from = [NotificationDto::class],
   to = [NotificationEntity::class]
 )
 data class NotificationDto(
